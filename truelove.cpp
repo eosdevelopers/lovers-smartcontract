@@ -11,27 +11,10 @@
 
 using std::string;
 using namespace eosio;
-//所有智能合约继承contract类
 class truelove : public eosio::contract {
   public:
-      //love类构造函数
       using contract::contract;
-      //@abi action 成员函数声明
-      // void say(account_name lover, string letter) {
-      //   //验证权限
-      //   require_auth( _self );
-      //   // 定义loves类型
-      //   print("_self:", name{_self}, ";", _self);
-      //   // records lovetable( _self, _self);
-      //   // //查询lover是否存在， 如果存在则assert
-      //   // auto exit = lovetable.find(lover);
-      //   // eosio_assert(exit == lovetable.end(), "You love has been said!");
-      //   // //构造loves
-      //   // lovetable.emplace( _self, [&]( auto& s ) {
-      //   //     s.lover = lover;
-      //   //     s.letter = letter;
-      //   // });
-      // }
+      
 
       // @abi action
       void transfer(account_name sender, account_name receiver, asset quanity, string memo) {
@@ -39,7 +22,7 @@ class truelove : public eosio::contract {
         auto sym = quanity.symbol.value;
         // print("sym:", sym, "==", S(4, EOS));
         if (sym != S(4, EOS)) {
-          return;
+          return;·
         }
         size_t tx_size = transaction_size();
         char buff[tx_size];
@@ -50,7 +33,7 @@ class truelove : public eosio::contract {
         // 
         
         records  lovetable( _self, _self);
-        //构造loves
+        //contruct loves
         lovetable.emplace( _self, [&]( auto& s ) {
           s.id = lovetable.available_primary_key();
           s.sender = sender;
@@ -62,7 +45,7 @@ class truelove : public eosio::contract {
       }
 
   private:
-      // @abi table 私有数据成员声明
+      // @abi table 
       struct lover {
         uint64_t        id; //auto increment id
         int64_t        amount;
@@ -70,11 +53,9 @@ class truelove : public eosio::contract {
         string          txHash;    
         string          letter;
         
-        //私有函数成员
         account_name primary_key()const { return id; }
         EOSLIB_SERIALIZE( lover, (id)(amount)(sender)(txHash)(letter) )
       };
-      //数据库类型定义
       typedef eosio::multi_index<N(lover), lover> records;
 };
 

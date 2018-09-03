@@ -5,7 +5,6 @@
 #include <eosiolib/types.h>
 #include <eosiolib/crypto.h>
 #include <eosiolib/transaction.h>
-#include <sstream>
 // #include <fc/crypto/hex.hpp>
 #include "./common.hpp"
 #include <string>
@@ -16,29 +15,32 @@ using namespace eosio;
 class truelove : public eosio::contract {
   public:
       //love类构造函数
-      // using contract::contract;
-      truelove(account_name s):eosio::contract(s), lovetable(s, s)
-      {}
-
+      using contract::contract;
       //@abi action 成员函数声明
-      void say(account_name lover, string letter) {
-        //验证权限
-        require_auth( _self );
-        // 定义loves类型
-        for(auto& item : lovetable)
-        {
-            print( "say id=", item.id, "\n");
-        }
-      }
+      // void say(account_name lover, string letter) {
+      //   //验证权限
+      //   require_auth( _self );
+      //   // 定义loves类型
+      //   print("_self:", name{_self}, ";", _self);
+      //   // records lovetable( _self, _self);
+      //   // //查询lover是否存在， 如果存在则assert
+      //   // auto exit = lovetable.find(lover);
+      //   // eosio_assert(exit == lovetable.end(), "You love has been said!");
+      //   // //构造loves
+      //   // lovetable.emplace( _self, [&]( auto& s ) {
+      //   //     s.lover = lover;
+      //   //     s.letter = letter;
+      //   // });
+      // }
 
       // @abi action
       void transfer(account_name sender, account_name receiver, asset quanity, string memo) {
         // print("transfer:", name{sender}, "=>", name{receiver}, ": ", quanity, ";   memo:", memo);
         auto sym = quanity.symbol.value;
         // print("sym:", sym, "==", S(4, EOS));
-        // if (sym != S(4, EOS)) {
-        //   return;
-        // }
+        if (sym != S(4, EOS)) {
+          return;
+        }
         size_t tx_size = transaction_size();
         char buff[tx_size];
         size_t read = read_transaction(buff, tx_size);
@@ -47,7 +49,7 @@ class truelove : public eosio::contract {
         string txHash = comm::to_hex((const char*)(&h), sizeof(h));
         // 
         
-        // records  lovetable( _self, _self);
+        records  lovetable( _self, _self);
         //构造loves
         lovetable.emplace( _self, [&]( auto& s ) {
           s.id = lovetable.available_primary_key();
@@ -57,15 +59,11 @@ class truelove : public eosio::contract {
           s.amount = quanity.amount;//(uint64_t)(quanity.amount * 10000);
         });
         // print("done");
-        for(auto& item : lovetable)
-        {
-            print( "id=", item.id, "\n");
-        }
       }
 
   private:
       // @abi table 私有数据成员声明
-      struct loverTable{
+      struct lover {
         uint64_t        id; //auto increment id
         int64_t        amount;
         account_name    sender;
@@ -74,16 +72,10 @@ class truelove : public eosio::contract {
         
         //私有函数成员
         account_name primary_key()const { return id; }
-        // string toString() {
-        //   ostringstream ds;
-        //   ds<<"{"<<"id:"<<id<<","<<"amount:"<<amount<<","<<"txHash="<<txHash<<"}";
-        //   return ds.str();
-        // }
-        EOSLIB_SERIALIZE( loverTable, (id)(amount)(sender)(txHash)(letter) )
+        EOSLIB_SERIALIZE( lover, (id)(amount)(sender)(txHash)(letter) )
       };
       //数据库类型定义
-      typedef eosio::multi_index<N(loverTable), loverTable> records;
-      records lovetable;
+      typedef eosio::multi_index<N(lover), lover> records;
 };
 
 
@@ -119,4 +111,4 @@ extern "C" { \
 } \
  /// @}  dispatcher
 
-EOSIO_ABI_EX(truelove, (transfer)(say))
+EOSIO_ABI_EX(truelove, (transfer))

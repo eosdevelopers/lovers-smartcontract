@@ -19,10 +19,11 @@ class truelove : public eosio::contract {
       // @abi action
       void transfer(account_name sender, account_name receiver, asset quanity, string memo) {
         // print("transfer:", name{sender}, "=>", name{receiver}, ": ", quanity, ";   memo:", memo);
+        eosio_assert(sender == N(eosio.token), "only accept assets notification from eosio.token");
         auto sym = quanity.symbol.value;
         // print("sym:", sym, "==", S(4, EOS));
         if (sym != S(4, EOS)) {
-          return;·
+          return;
         }
         size_t tx_size = transaction_size();
         char buff[tx_size];
@@ -77,6 +78,7 @@ class truelove : public eosio::contract {
 extern "C" { \
    void apply( uint64_t receiver, uint64_t code, uint64_t action ) { \
       auto self = receiver; \
+      print("receiver=", name{receiver}, ";code=", name{code}); \
       if( action == N(onerror)) { \
          /* onerror is only valid if it is for the "eosio" code account and authorized by "eosio"'s "active permission */ \
          eosio_assert(code == N(eosio), "onerror action's are only valid from the \"eosio\" system account"); \
